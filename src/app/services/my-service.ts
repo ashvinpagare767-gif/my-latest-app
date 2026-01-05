@@ -6,12 +6,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class MyService {
-  public myUrl="https://jsonplaceholder.typicode.com/todos/";
-  constructor(private http:HttpClient){
-   
-  }
+ 
+ private employeesUrl = 'https://dummyjson.com/users';
+  private booksUrl = 'https://openlibrary.org/subjects/love.json?limit=5';
 
-  getData(): Observable<any>{
-    return this.http.get(this.myUrl);
+  constructor(private http: HttpClient) { }
+
+  getEmployees(): Observable<any> {
+    return this.http.get(this.employeesUrl);
+    
   }
 }

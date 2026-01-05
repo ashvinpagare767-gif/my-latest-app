@@ -1,11 +1,13 @@
 import { CommonModule, NgFor } from '@angular/common';
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { MyService } from '../services/my-service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export interface MyUserList{
   id:number
-  title: string,
-  completed: boolean
+  email: string,
+  firstName: string;
+  lastName: string;
 }
 
 
@@ -15,17 +17,21 @@ export interface MyUserList{
   templateUrl: './user-list-component.html',
   styleUrl: './user-list-component.scss',
 })
-export class UserListComponent {
+export class UserListComponent implements OnInit {
   userListData: MyUserList[] = [];
+  private destroyRef = inject(DestroyRef);
   constructor(private myService : MyService){
-     this.getUserList();
+    
   }
+ ngOnInit(): void {
+    this.getUserList();
+ }
 
 
   getUserList(){
-    this.myService.getData().subscribe((response)=>{
-       console.log('response',response);
-       this.userListData=response;
+    this.myService.getEmployees().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((response)=>{
+       console.log('response',response.users);
+       this.userListData=response['users'];
     });
   }
 
