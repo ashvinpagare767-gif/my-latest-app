@@ -1,38 +1,88 @@
 import { CommonModule, NgFor } from '@angular/common';
-import { AfterViewInit, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { MyService } from '../services/my-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, FormControlName, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
-export interface MyUserList{
+export interface Todo{
   id:number
-  email: string,
-  firstName: string;
-  lastName: string;
-}
-
+  todo: string,
+  completed: string;
+  userId: string;
+};
+interface TodoResponse {
+  todos: Todo[];
+  total: number;
+  skip: number;
+  limit: number;
+};
 
 @Component({
   selector: 'app-user-list-component',
-  imports: [CommonModule],
+  imports: [ReactiveFormsModule,FormsModule,CommonModule],
   templateUrl: './user-list-component.html',
   styleUrl: './user-list-component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserListComponent implements OnInit {
-  userListData: MyUserList[] = [];
+  todos: Todo[] = [];
+  total = 0;
+  pageSize = 10;
+  currentPage = 1;
+  loading = false;
+
+  dataEnable=false;
+  loginForm:any;
   private destroyRef = inject(DestroyRef);
   constructor(private myService : MyService){
-    
+    this.loginForm= new FormGroup({
+      todo: new FormControl(''),
+      completed: new FormControl(''),
+      userId: new FormControl(''),
+    })
   }
  ngOnInit(): void {
-    this.getUserList();
+   this.fetchTodos();
  }
 
+ fetchTodos() : void{
+  this.loading = true;
 
-  getUserList(){
-    this.myService.getEmployees().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((response)=>{
-       console.log('response',response.users);
-       this.userListData=response['users'];
-    });
+    const skip = (this.currentPage - 1) * this.pageSize;
+
+   this.myService.getUserData(this.currentPage,skip).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    next: res => {
+      this.todos = res.todos;
+      this.total = res.total;
+      this.loading = false;
+    },
+    error: () => {
+      this.loading = false;
+    }
+  });
+ }
+
+ submitForm(): void {
+  const payload = {
+    "todo": this.loginForm?.value?.todo,
+    "completed": this.loginForm?.value?.completed,
+    "userId": this.loginForm?.value?.userId
+  };
+this.myService.postData(payload).subscribe(
+response => console.log('Success:', response),
+error => console.error('Error:', error)
+);
+}
+
+get totalPages(): number {
+  return Math.ceil(this.total / this.pageSize);
+}
+
+changePage(page: number): void {
+  if (page >= 1 && page <= this.totalPages) {
+    this.currentPage = page;
+    this.fetchTodos();
   }
+}
 
 }

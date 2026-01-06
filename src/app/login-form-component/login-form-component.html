@@ -2,21 +2,30 @@
     <div class="container">
      <div class="mb-3">
         <label class="from-lable">
-            User Name
+            To Do
         </label>
-        <input type="text" formControlName="name" class="form-control">
+        <input type="text" formControlName="todo" class="form-control">
     </div>
     <div class="mb-3">
         <label class="from-lable">
-            Password
+            Completed
         </label>
-        <input type="password" formControlName="password" class="form-control">
+        <select formControlName="completed">
+            <option value="true">True</option>
+            <option value="flase">Flase</option>
+        </select>
     </div>
+    <div class="mb-3">
+        <label class="from-lable">
+            User Id
+        </label>
+        <input type="text" formControlName="userId" class="form-control">
+    </div>
+    
     <div class="mb-3"> 
         <button type="submit" class="btn btn-primary" (click)="submitForm()">Submit</button>
     </div>
     </div>
 </form>
 
-<app-user-list-component></app-user-list-component>
 
